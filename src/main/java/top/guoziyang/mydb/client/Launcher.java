@@ -1,12 +1,11 @@
 package top.guoziyang.mydb.client;
 
-import java.io.IOException;
-import java.net.Socket;
-import java.net.UnknownHostException;
-
 import top.guoziyang.mydb.transport.Encoder;
 import top.guoziyang.mydb.transport.Packager;
 import top.guoziyang.mydb.transport.Transporter;
+
+import java.io.IOException;
+import java.net.Socket;
 
 public class Launcher {
     public static void main(String[] args) throws IOException {
