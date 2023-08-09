@@ -49,7 +49,8 @@ public class MockDataItem implements DataItem {
     }
 
     @Override
-    public void release() {}
+    public void release() {
+    }
 
     @Override
     public void lock() {
@@ -90,5 +91,5 @@ public class MockDataItem implements DataItem {
     public SubArray getRaw() {
         return data;
     }
-    
+
 }

@@ -42,7 +42,7 @@ public class BPlusTree {
         bootLock.lock();
         try {
             SubArray sa = bootDataItem.data();
-            return Parser.parseLong(Arrays.copyOfRange(sa.raw, sa.start, sa.start+8));
+            return Parser.parseLong(Arrays.copyOfRange(sa.raw, sa.start, sa.start + 8));
         } finally {
             bootLock.unlock();
         }
@@ -67,7 +67,7 @@ public class BPlusTree {
         boolean isLeaf = node.isLeaf();
         node.release();
 
-        if(isLeaf) {
+        if (isLeaf) {
             return nodeUid;
         } else {
             long next = searchNext(nodeUid, key);
@@ -76,11 +76,11 @@ public class BPlusTree {
     }
 
     private long searchNext(long nodeUid, long key) throws Exception {
-        while(true) {
+        while (true) {
             Node node = Node.loadNode(this, nodeUid);
             SearchNextRes res = node.searchNext(key);
             node.release();
-            if(res.uid != 0) return res.uid;
+            if (res.uid != 0) return res.uid;
             nodeUid = res.siblingUid;
         }
     }
@@ -93,12 +93,12 @@ public class BPlusTree {
         long rootUid = rootUid();
         long leafUid = searchLeaf(rootUid, leftKey);
         List<Long> uids = new ArrayList<>();
-        while(true) {
+        while (true) {
             Node leaf = Node.loadNode(this, leafUid);
             LeafSearchRangeRes res = leaf.leafSearchRange(leftKey, rightKey);
             leaf.release();
             uids.addAll(res.uids);
-            if(res.siblingUid == 0) {
+            if (res.siblingUid == 0) {
                 break;
             } else {
                 leafUid = res.siblingUid;
@@ -111,7 +111,7 @@ public class BPlusTree {
         long rootUid = rootUid();
         InsertRes res = insert(rootUid, uid, key);
         assert res != null;
-        if(res.newNode != 0) {
+        if (res.newNode != 0) {
             updateRootUid(rootUid, res.newNode, res.newKey);
         }
     }
@@ -126,12 +126,12 @@ public class BPlusTree {
         node.release();
 
         InsertRes res = null;
-        if(isLeaf) {
+        if (isLeaf) {
             res = insertAndSplit(nodeUid, uid, key);
         } else {
             long next = searchNext(nodeUid, key);
             InsertRes ir = insert(next, uid, key);
-            if(ir.newNode != 0) {
+            if (ir.newNode != 0) {
                 res = insertAndSplit(nodeUid, ir.newNode, ir.newKey);
             } else {
                 res = new InsertRes();
@@ -141,11 +141,11 @@ public class BPlusTree {
     }
 
     private InsertRes insertAndSplit(long nodeUid, long uid, long key) throws Exception {
-        while(true) {
+        while (true) {
             Node node = Node.loadNode(this, nodeUid);
             InsertAndSplitRes iasr = node.insertAndSplit(uid, key);
             node.release();
-            if(iasr.siblingUid != 0) {
+            if (iasr.siblingUid != 0) {
                 nodeUid = iasr.siblingUid;
             } else {
                 InsertRes res = new InsertRes();

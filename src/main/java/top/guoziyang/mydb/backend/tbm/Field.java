@@ -30,7 +30,7 @@ public class Field {
     public static Field loadField(Table tb, long uid) {
         byte[] raw = null;
         try {
-            raw = ((TableManagerImpl)tb.tbm).vm.read(TransactionManagerImpl.SUPER_XID, uid);
+            raw = ((TableManagerImpl) tb.tbm).vm.read(TransactionManagerImpl.SUPER_XID, uid);
         } catch (Exception e) {
             Panic.panic(e);
         }
@@ -58,11 +58,11 @@ public class Field {
         res = Parser.parseString(Arrays.copyOfRange(raw, position, raw.length));
         fieldType = res.str;
         position += res.next;
-        this.index = Parser.parseLong(Arrays.copyOfRange(raw, position, position+8));
-        if(index != 0) {
+        this.index = Parser.parseLong(Arrays.copyOfRange(raw, position, position + 8));
+        if (index != 0) {
             try {
-                bt = BPlusTree.load(index, ((TableManagerImpl)tb.tbm).dm);
-            } catch(Exception e) {
+                bt = BPlusTree.load(index, ((TableManagerImpl) tb.tbm).dm);
+            } catch (Exception e) {
                 Panic.panic(e);
             }
         }
@@ -72,9 +72,9 @@ public class Field {
     public static Field createField(Table tb, long xid, String fieldName, String fieldType, boolean indexed) throws Exception {
         typeCheck(fieldType);
         Field f = new Field(tb, fieldName, fieldType, 0);
-        if(indexed) {
-            long index = BPlusTree.create(((TableManagerImpl)tb.tbm).dm);
-            BPlusTree bt = BPlusTree.load(index, ((TableManagerImpl)tb.tbm).dm);
+        if (indexed) {
+            long index = BPlusTree.create(((TableManagerImpl) tb.tbm).dm);
+            BPlusTree bt = BPlusTree.load(index, ((TableManagerImpl) tb.tbm).dm);
             f.index = index;
             f.bt = bt;
         }
@@ -86,11 +86,11 @@ public class Field {
         byte[] nameRaw = Parser.string2Byte(fieldName);
         byte[] typeRaw = Parser.string2Byte(fieldType);
         byte[] indexRaw = Parser.long2Byte(index);
-        this.uid = ((TableManagerImpl)tb.tbm).vm.insert(xid, Bytes.concat(nameRaw, typeRaw, indexRaw));
+        this.uid = ((TableManagerImpl) tb.tbm).vm.insert(xid, Bytes.concat(nameRaw, typeRaw, indexRaw));
     }
 
     private static void typeCheck(String fieldType) throws Exception {
-        if(!"int32".equals(fieldType) && !"int64".equals(fieldType) && !"string".equals(fieldType)) {
+        if (!"int32".equals(fieldType) && !"int64".equals(fieldType) && !"string".equals(fieldType)) {
             throw Error.InvalidFieldException;
         }
     }
@@ -109,7 +109,7 @@ public class Field {
     }
 
     public Object string2Value(String str) {
-        switch(fieldType) {
+        switch (fieldType) {
             case "int32":
                 return Integer.parseInt(str);
             case "int64":
@@ -122,15 +122,15 @@ public class Field {
 
     public long value2Uid(Object key) {
         long uid = 0;
-        switch(fieldType) {
+        switch (fieldType) {
             case "string":
-                uid = Parser.str2Uid((String)key);
+                uid = Parser.str2Uid((String) key);
                 break;
             case "int32":
-                int uint = (int)key;
-                return (long)uint;
+                int uint = (int) key;
+                return (long) uint;
             case "int64":
-                uid = (long)key;
+                uid = (long) key;
                 break;
         }
         return uid;
@@ -138,15 +138,15 @@ public class Field {
 
     public byte[] value2Raw(Object v) {
         byte[] raw = null;
-        switch(fieldType) {
+        switch (fieldType) {
             case "int32":
-                raw = Parser.int2Byte((int)v);
+                raw = Parser.int2Byte((int) v);
                 break;
             case "int64":
-                raw = Parser.long2Byte((long)v);
+                raw = Parser.long2Byte((long) v);
                 break;
             case "string":
-                raw = Parser.string2Byte((String)v);
+                raw = Parser.string2Byte((String) v);
                 break;
         }
         return raw;
@@ -159,7 +159,7 @@ public class Field {
 
     public ParseValueRes parserValue(byte[] raw) {
         ParseValueRes res = new ParseValueRes();
-        switch(fieldType) {
+        switch (fieldType) {
             case "int32":
                 res.v = Parser.parseInt(Arrays.copyOf(raw, 4));
                 res.shift = 4;
@@ -179,15 +179,15 @@ public class Field {
 
     public String printValue(Object v) {
         String str = null;
-        switch(fieldType) {
+        switch (fieldType) {
             case "int32":
-                str = String.valueOf((int)v);
+                str = String.valueOf((int) v);
                 break;
             case "int64":
-                str = String.valueOf((long)v);
+                str = String.valueOf((long) v);
                 break;
             case "string":
-                str = (String)v;
+                str = (String) v;
                 break;
         }
         return str;
@@ -196,24 +196,24 @@ public class Field {
     @Override
     public String toString() {
         return new StringBuilder("(")
-            .append(fieldName)
-            .append(", ")
-            .append(fieldType)
-            .append(index!=0?", Index":", NoIndex")
-            .append(")")
-            .toString();
+                .append(fieldName)
+                .append(", ")
+                .append(fieldType)
+                .append(index != 0 ? ", Index" : ", NoIndex")
+                .append(")")
+                .toString();
     }
 
     public FieldCalRes calExp(SingleExpression exp) throws Exception {
         Object v = null;
         FieldCalRes res = new FieldCalRes();
-        switch(exp.compareOp) {
+        switch (exp.compareOp) {
             case "<":
                 res.left = 0;
                 v = string2Value(exp.value);
                 res.right = value2Uid(v);
-                if(res.right > 0) {
-                    res.right --;
+                if (res.right > 0) {
+                    res.right--;
                 }
                 break;
             case "=":

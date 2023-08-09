@@ -40,12 +40,12 @@ public class DataItemImpl implements DataItem {
     }
 
     public boolean isValid() {
-        return raw.raw[raw.start+OF_VALID] == (byte)0;
+        return raw.raw[raw.start + OF_VALID] == (byte) 0;
     }
 
     @Override
     public SubArray data() {
-        return new SubArray(raw.raw, raw.start+OF_DATA, raw.end);
+        return new SubArray(raw.raw, raw.start + OF_DATA, raw.end);
     }
 
     @Override
@@ -111,5 +111,5 @@ public class DataItemImpl implements DataItem {
     public SubArray getRaw() {
         return raw;
     }
-    
+
 }

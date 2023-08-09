@@ -8,10 +8,12 @@ import top.guoziyang.mydb.backend.tm.TransactionManager;
 
 public interface DataManager {
     DataItem read(long uid) throws Exception;
+
     long insert(long xid, byte[] data) throws Exception;
+
     void close();
 
-    public static DataManager create(String path, long mem, TransactionManager tm) {
+    static DataManager create(String path, long mem, TransactionManager tm) {
         PageCache pc = PageCache.create(path, mem);
         Logger lg = Logger.create(path);
 
@@ -24,7 +26,7 @@ public interface DataManager {
         PageCache pc = PageCache.open(path, mem);
         Logger lg = Logger.open(path);
         DataManagerImpl dm = new DataManagerImpl(pc, lg, tm);
-        if(!dm.loadCheckPageOne()) {
+        if (!dm.loadCheckPageOne()) {
             Recover.recover(tm, lg, pc);
         }
         dm.fillPageIndex();

@@ -16,11 +16,11 @@ import top.guoziyang.mydb.common.Error;
 
 /**
  * 日志文件读写
- * 
+ * <p>
  * 日志文件标准格式为：
  * [XChecksum] [Log1] [Log2] ... [LogN] [BadTail]
  * XChecksum 为后续所有日志计算的Checksum，int类型
- * 
+ * <p>
  * 每条正确日志的格式为：
  * [Size] [Checksum] [Data]
  * Size 4字节int 标识Data长度
@@ -33,7 +33,7 @@ public class LoggerImpl implements Logger {
     private static final int OF_SIZE = 0;
     private static final int OF_CHECKSUM = OF_SIZE + 4;
     private static final int OF_DATA = OF_CHECKSUM + 4;
-    
+
     public static final String LOG_SUFFIX = ".log";
 
     private RandomAccessFile file;
@@ -64,7 +64,7 @@ public class LoggerImpl implements Logger {
         } catch (IOException e) {
             Panic.panic(e);
         }
-        if(size < 4) {
+        if (size < 4) {
             Panic.panic(Error.BadLogFileException);
         }
 
@@ -87,12 +87,12 @@ public class LoggerImpl implements Logger {
         rewind();
 
         int xCheck = 0;
-        while(true) {
+        while (true) {
             byte[] log = internNext();
-            if(log == null) break;
+            if (log == null) break;
             xCheck = calChecksum(xCheck, log);
         }
-        if(xCheck != xChecksum) {
+        if (xCheck != xChecksum) {
             Panic.panic(Error.BadLogFileException);
         }
 
@@ -124,7 +124,7 @@ public class LoggerImpl implements Logger {
         try {
             fc.position(fc.size());
             fc.write(buf);
-        } catch(IOException e) {
+        } catch (IOException e) {
             Panic.panic(e);
         } finally {
             lock.unlock();
@@ -138,7 +138,7 @@ public class LoggerImpl implements Logger {
             fc.position(0);
             fc.write(ByteBuffer.wrap(Parser.int2Byte(xChecksum)));
             fc.force(false);
-        } catch(IOException e) {
+        } catch (IOException e) {
             Panic.panic(e);
         }
     }
@@ -160,18 +160,18 @@ public class LoggerImpl implements Logger {
     }
 
     private byte[] internNext() {
-        if(position + OF_DATA >= fileSize) {
+        if (position + OF_DATA >= fileSize) {
             return null;
         }
         ByteBuffer tmp = ByteBuffer.allocate(4);
         try {
             fc.position(position);
             fc.read(tmp);
-        } catch(IOException e) {
+        } catch (IOException e) {
             Panic.panic(e);
         }
         int size = Parser.parseInt(tmp.array());
-        if(position + size + OF_DATA > fileSize) {
+        if (position + size + OF_DATA > fileSize) {
             return null;
         }
 
@@ -179,14 +179,14 @@ public class LoggerImpl implements Logger {
         try {
             fc.position(position);
             fc.read(buf);
-        } catch(IOException e) {
+        } catch (IOException e) {
             Panic.panic(e);
         }
 
         byte[] log = buf.array();
         int checkSum1 = calChecksum(0, Arrays.copyOfRange(log, OF_DATA, log.length));
         int checkSum2 = Parser.parseInt(Arrays.copyOfRange(log, OF_CHECKSUM, OF_DATA));
-        if(checkSum1 != checkSum2) {
+        if (checkSum1 != checkSum2) {
             return null;
         }
         position += log.length;
@@ -198,7 +198,7 @@ public class LoggerImpl implements Logger {
         lock.lock();
         try {
             byte[] log = internNext();
-            if(log == null) return null;
+            if (log == null) return null;
             return Arrays.copyOfRange(log, OF_DATA, log.length);
         } finally {
             lock.unlock();
@@ -215,9 +215,9 @@ public class LoggerImpl implements Logger {
         try {
             fc.close();
             file.close();
-        } catch(IOException e) {
+        } catch (IOException e) {
             Panic.panic(e);
         }
     }
-    
+
 }

@@ -12,6 +12,7 @@ public class MockCache extends AbstractCache<Long> {
     }
 
     @Override
-    protected void releaseForCache(Long obj) {}
-    
+    protected void releaseForCache(Long obj) {
+    }
+
 }

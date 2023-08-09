@@ -10,7 +10,6 @@ public class PageImpl implements Page {
     private byte[] data;
     private boolean dirty;
     private Lock lock;
-    
     private PageCache pc;
 
     public PageImpl(int pageNumber, byte[] data, PageCache pc) {

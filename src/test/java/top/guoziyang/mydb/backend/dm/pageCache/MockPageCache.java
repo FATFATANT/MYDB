@@ -14,7 +14,7 @@ public class MockPageCache implements PageCache {
     private Map<Integer, MockPage> cache = new HashMap<>();
     private Lock lock = new ReentrantLock();
     private AtomicInteger noPages = new AtomicInteger(0);
-    
+
     @Override
     public int newPage(byte[] initData) {
         lock.lock();
@@ -39,13 +39,16 @@ public class MockPageCache implements PageCache {
     }
 
     @Override
-    public void close() {}
+    public void close() {
+    }
 
     @Override
-    public void release(Page page) {}
+    public void release(Page page) {
+    }
 
     @Override
-    public void truncateByBgno(int maxPgno) {}
+    public void truncateByBgno(int maxPgno) {
+    }
 
     @Override
     public int getPageNumber() {
@@ -53,6 +56,7 @@ public class MockPageCache implements PageCache {
     }
 
     @Override
-    public void flushPage(Page pg) {}
-    
+    public void flushPage(Page pg) {
+    }
+
 }

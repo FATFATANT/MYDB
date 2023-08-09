@@ -37,10 +37,10 @@ public class MockDataManager implements DataManager {
         lock.lock();
         try {
             long uid = 0;
-            while(true) {
+            while (true) {
                 uid = Math.abs(new Random(System.nanoTime()).nextInt(Integer.MAX_VALUE));
-                if(uid == 0) continue;
-                if(cache.containsKey(uid)) continue;
+                if (uid == 0) continue;
+                if (cache.containsKey(uid)) continue;
                 break;
             }
             DataItem di = MockDataItem.newMockDataItem(uid, new SubArray(data, 0, data.length));
@@ -52,6 +52,7 @@ public class MockDataManager implements DataManager {
     }
 
     @Override
-    public void close() {}
-    
+    public void close() {
+    }
+
 }

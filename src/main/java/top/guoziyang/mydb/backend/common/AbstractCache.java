@@ -14,7 +14,6 @@ public abstract class AbstractCache<T> {
     private HashMap<Long, T> cache;                     // 实际缓存的数据
     private HashMap<Long, Integer> references;          // 元素的引用个数
     private HashMap<Long, Boolean> getting;             // 正在获取某资源的线程
-
     private int maxResource;                            // 缓存的最大缓存资源数
     private int count = 0;                              // 缓存中元素的个数
     private Lock lock;
@@ -28,9 +27,9 @@ public abstract class AbstractCache<T> {
     }
 
     protected T get(long key) throws Exception {
-        while(true) {
+        while (true) {
             lock.lock();
-            if(getting.containsKey(key)) {
+            if (getting.containsKey(key)) {
                 // 请求的资源正在被其他线程获取
                 lock.unlock();
                 try {
@@ -42,7 +41,7 @@ public abstract class AbstractCache<T> {
                 continue;
             }
 
-            if(cache.containsKey(key)) {
+            if (cache.containsKey(key)) {
                 // 资源在缓存中，直接返回
                 T obj = cache.get(key);
                 references.put(key, references.get(key) + 1);
@@ -51,11 +50,11 @@ public abstract class AbstractCache<T> {
             }
 
             // 尝试获取该资源
-            if(maxResource > 0 && count == maxResource) {
+            if (maxResource > 0 && count == maxResource) {
                 lock.unlock();
                 throw Error.CacheFullException;
             }
-            count ++;
+            count++;
             getting.put(key, true);
             lock.unlock();
             break;
@@ -64,9 +63,9 @@ public abstract class AbstractCache<T> {
         T obj = null;
         try {
             obj = getForCache(key);
-        } catch(Exception e) {
+        } catch (Exception e) {
             lock.lock();
-            count --;
+            count--;
             getting.remove(key);
             lock.unlock();
             throw e;
@@ -77,7 +76,7 @@ public abstract class AbstractCache<T> {
         cache.put(key, obj);
         references.put(key, 1);
         lock.unlock();
-        
+
         return obj;
     }
 
@@ -87,13 +86,13 @@ public abstract class AbstractCache<T> {
     protected void release(long key) {
         lock.lock();
         try {
-            int ref = references.get(key)-1;
-            if(ref == 0) {
+            int ref = references.get(key) - 1;
+            if (ref == 0) {
                 T obj = cache.get(key);
                 releaseForCache(obj);
                 references.remove(key);
                 cache.remove(key);
-                count --;
+                count--;
             } else {
                 references.put(key, ref);
             }
@@ -125,6 +124,7 @@ public abstract class AbstractCache<T> {
      * 当资源不在缓存时的获取行为
      */
     protected abstract T getForCache(long key) throws Exception;
+
     /**
      * 当资源被驱逐时的写回行为
      */

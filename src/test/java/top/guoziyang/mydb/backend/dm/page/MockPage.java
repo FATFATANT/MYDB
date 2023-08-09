@@ -27,10 +27,12 @@ public class MockPage implements Page {
     }
 
     @Override
-    public void release() {}
+    public void release() {
+    }
 
     @Override
-    public void setDirty(boolean dirty) {}
+    public void setDirty(boolean dirty) {
+    }
 
     @Override
     public boolean isDirty() {
@@ -46,5 +48,5 @@ public class MockPage implements Page {
     public byte[] getData() {
         return data;
     }
-    
+
 }

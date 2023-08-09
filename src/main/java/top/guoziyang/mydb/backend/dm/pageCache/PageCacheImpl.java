@@ -15,10 +15,9 @@ import top.guoziyang.mydb.backend.utils.Panic;
 import top.guoziyang.mydb.common.Error;
 
 public class PageCacheImpl extends AbstractCache<Page> implements PageCache {
-    
+
     private static final int MEM_MIN_LIM = 10;
     public static final String DB_SUFFIX = ".db";
-
     private RandomAccessFile file;
     private FileChannel fc;
     private Lock fileLock;
@@ -27,7 +26,7 @@ public class PageCacheImpl extends AbstractCache<Page> implements PageCache {
 
     PageCacheImpl(RandomAccessFile file, FileChannel fileChannel, int maxResource) {
         super(maxResource);
-        if(maxResource < MEM_MIN_LIM) {
+        if (maxResource < MEM_MIN_LIM) {
             Panic.panic(Error.MemTooSmallException);
         }
         long length = 0;
@@ -39,7 +38,7 @@ public class PageCacheImpl extends AbstractCache<Page> implements PageCache {
         this.file = file;
         this.fc = fileChannel;
         this.fileLock = new ReentrantLock();
-        this.pageNumbers = new AtomicInteger((int)length / PAGE_SIZE);
+        this.pageNumbers = new AtomicInteger((int) length / PAGE_SIZE);
     }
 
     public int newPage(byte[] initData) {
@@ -50,7 +49,7 @@ public class PageCacheImpl extends AbstractCache<Page> implements PageCache {
     }
 
     public Page getPage(int pgno) throws Exception {
-        return get((long)pgno);
+        return get((long) pgno);
     }
 
     /**
@@ -58,7 +57,7 @@ public class PageCacheImpl extends AbstractCache<Page> implements PageCache {
      */
     @Override
     protected Page getForCache(long key) throws Exception {
-        int pgno = (int)key;
+        int pgno = (int) key;
         long offset = PageCacheImpl.pageOffset(pgno);
 
         ByteBuffer buf = ByteBuffer.allocate(PAGE_SIZE);
@@ -66,7 +65,7 @@ public class PageCacheImpl extends AbstractCache<Page> implements PageCache {
         try {
             fc.position(offset);
             fc.read(buf);
-        } catch(IOException e) {
+        } catch (IOException e) {
             Panic.panic(e);
         }
         fileLock.unlock();
@@ -75,14 +74,14 @@ public class PageCacheImpl extends AbstractCache<Page> implements PageCache {
 
     @Override
     protected void releaseForCache(Page pg) {
-        if(pg.isDirty()) {
+        if (pg.isDirty()) {
             flush(pg);
             pg.setDirty(false);
         }
     }
 
     public void release(Page page) {
-        release((long)page.getPageNumber());
+        release((long) page.getPageNumber());
     }
 
     public void flushPage(Page pg) {
@@ -99,7 +98,7 @@ public class PageCacheImpl extends AbstractCache<Page> implements PageCache {
             fc.position(offset);
             fc.write(buf);
             fc.force(false);
-        } catch(IOException e) {
+        } catch (IOException e) {
             Panic.panic(e);
         } finally {
             fileLock.unlock();
@@ -132,7 +131,7 @@ public class PageCacheImpl extends AbstractCache<Page> implements PageCache {
     }
 
     private static long pageOffset(int pgno) {
-        return (pgno-1) * PAGE_SIZE;
+        return (pgno - 1) * PAGE_SIZE;
     }
-    
+
 }

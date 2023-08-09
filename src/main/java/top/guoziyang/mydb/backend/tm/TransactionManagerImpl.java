@@ -19,15 +19,13 @@ public class TransactionManagerImpl implements TransactionManager {
     private static final int XID_FIELD_SIZE = 1;
 
     // 事务的三种状态
-    private static final byte FIELD_TRAN_ACTIVE   = 0;
-	private static final byte FIELD_TRAN_COMMITTED = 1;
-	private static final byte FIELD_TRAN_ABORTED  = 2;
+    private static final byte FIELD_TRAN_ACTIVE = 0;
+    private static final byte FIELD_TRAN_COMMITTED = 1;
+    private static final byte FIELD_TRAN_ABORTED = 2;
 
-    // 超级事务，永远为commited状态
+    // 超级事务，永远为committed状态
     public static final long SUPER_XID = 0;
-
     static final String XID_SUFFIX = ".xid";
-    
     private RandomAccessFile file;
     private FileChannel fc;
     private long xidCounter;
@@ -51,7 +49,7 @@ public class TransactionManagerImpl implements TransactionManager {
         } catch (IOException e1) {
             Panic.panic(Error.BadXIDFileException);
         }
-        if(fileLen < LEN_XID_HEADER_LENGTH) {
+        if (fileLen < LEN_XID_HEADER_LENGTH) {
             Panic.panic(Error.BadXIDFileException);
         }
 
@@ -64,14 +62,14 @@ public class TransactionManagerImpl implements TransactionManager {
         }
         this.xidCounter = Parser.parseLong(buf.array());
         long end = getXidPosition(this.xidCounter + 1);
-        if(end != fileLen) {
+        if (end != fileLen) {
             Panic.panic(Error.BadXIDFileException);
         }
     }
 
     // 根据事务xid取得其在xid文件中对应的位置
     private long getXidPosition(long xid) {
-        return LEN_XID_HEADER_LENGTH + (xid-1)*XID_FIELD_SIZE;
+        return LEN_XID_HEADER_LENGTH + (xid - 1) * XID_FIELD_SIZE;
     }
 
     // 更新xid事务的状态为status
@@ -95,7 +93,7 @@ public class TransactionManagerImpl implements TransactionManager {
 
     // 将XID加一，并更新XID Header
     private void incrXIDCounter() {
-        xidCounter ++;
+        xidCounter++;
         ByteBuffer buf = ByteBuffer.wrap(Parser.long2Byte(xidCounter));
         try {
             fc.position(0);
@@ -147,17 +145,17 @@ public class TransactionManagerImpl implements TransactionManager {
     }
 
     public boolean isActive(long xid) {
-        if(xid == SUPER_XID) return false;
+        if (xid == SUPER_XID) return false;
         return checkXID(xid, FIELD_TRAN_ACTIVE);
     }
 
     public boolean isCommitted(long xid) {
-        if(xid == SUPER_XID) return true;
+        if (xid == SUPER_XID) return true;
         return checkXID(xid, FIELD_TRAN_COMMITTED);
     }
 
     public boolean isAborted(long xid) {
-        if(xid == SUPER_XID) return false;
+        if (xid == SUPER_XID) return false;
         return checkXID(xid, FIELD_TRAN_ABORTED);
     }
 

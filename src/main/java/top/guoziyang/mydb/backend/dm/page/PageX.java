@@ -12,7 +12,7 @@ import top.guoziyang.mydb.backend.utils.Parser;
  * FreeSpaceOffset: 2字节 空闲位置开始偏移
  */
 public class PageX {
-    
+
     private static final short OF_FREE = 0;
     private static final short OF_DATA = 2;
     public static final int MAX_FREE_SPACE = PageCache.PAGE_SIZE - OF_DATA;
@@ -41,13 +41,13 @@ public class PageX {
         pg.setDirty(true);
         short offset = getFSO(pg.getData());
         System.arraycopy(raw, 0, pg.getData(), offset, raw.length);
-        setFSO(pg.getData(), (short)(offset + raw.length));
+        setFSO(pg.getData(), (short) (offset + raw.length));
         return offset;
     }
 
     // 获取页面的空闲空间大小
     public static int getFreeSpace(Page pg) {
-        return PageCache.PAGE_SIZE - (int)getFSO(pg.getData());
+        return PageCache.PAGE_SIZE - (int) getFSO(pg.getData());
     }
 
     // 将raw插入pg中的offset位置，并将pg的offset设置为较大的offset
@@ -56,8 +56,8 @@ public class PageX {
         System.arraycopy(raw, 0, pg.getData(), offset, raw.length);
 
         short rawFSO = getFSO(pg.getData());
-        if(rawFSO < offset + raw.length) {
-            setFSO(pg.getData(), (short)(offset+raw.length));
+        if (rawFSO < offset + raw.length) {
+            setFSO(pg.getData(), (short) (offset + raw.length));
         }
     }
 

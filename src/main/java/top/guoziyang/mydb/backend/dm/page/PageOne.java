@@ -36,7 +36,7 @@ public class PageOne {
     }
 
     private static void setVcClose(byte[] raw) {
-        System.arraycopy(raw, OF_VC, raw, OF_VC+LEN_VC, LEN_VC);
+        System.arraycopy(raw, OF_VC, raw, OF_VC + LEN_VC, LEN_VC);
     }
 
     public static boolean checkVc(Page pg) {
@@ -44,6 +44,6 @@ public class PageOne {
     }
 
     private static boolean checkVc(byte[] raw) {
-        return Arrays.equals(Arrays.copyOfRange(raw, OF_VC, OF_VC+LEN_VC), Arrays.copyOfRange(raw, OF_VC+LEN_VC, OF_VC+2*LEN_VC));
+        return Arrays.equals(Arrays.copyOfRange(raw, OF_VC, OF_VC + LEN_VC), Arrays.copyOfRange(raw, OF_VC + LEN_VC, OF_VC + 2 * LEN_VC));
     }
 }

@@ -29,7 +29,7 @@ public class Transporter {
 
     public byte[] receive() throws Exception {
         String line = reader.readLine();
-        if(line == null) {
+        if (line == null) {
             close();
         }
         return hexDecode(line);
@@ -42,7 +42,7 @@ public class Transporter {
     }
 
     private String hexEncode(byte[] buf) {
-        return Hex.encodeHexString(buf, true)+"\n";
+        return Hex.encodeHexString(buf, true) + "\n";
     }
 
     private byte[] hexDecode(String buf) throws DecoderException {

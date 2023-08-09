@@ -36,22 +36,22 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
         Transaction t = activeTransaction.get(xid);
         lock.unlock();
 
-        if(t.err != null) {
+        if (t.err != null) {
             throw t.err;
         }
 
         Entry entry = null;
         try {
             entry = super.get(uid);
-        } catch(Exception e) {
-            if(e == Error.NullEntryException) {
+        } catch (Exception e) {
+            if (e == Error.NullEntryException) {
                 return null;
             } else {
                 throw e;
             }
         }
         try {
-            if(Visibility.isVisible(tm, t, entry)) {
+            if (Visibility.isVisible(tm, t, entry)) {
                 return entry.data();
             } else {
                 return null;
@@ -67,7 +67,7 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
         Transaction t = activeTransaction.get(xid);
         lock.unlock();
 
-        if(t.err != null) {
+        if (t.err != null) {
             throw t.err;
         }
 
@@ -81,42 +81,42 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
         Transaction t = activeTransaction.get(xid);
         lock.unlock();
 
-        if(t.err != null) {
+        if (t.err != null) {
             throw t.err;
         }
         Entry entry = null;
         try {
             entry = super.get(uid);
-        } catch(Exception e) {
-            if(e == Error.NullEntryException) {
+        } catch (Exception e) {
+            if (e == Error.NullEntryException) {
                 return false;
             } else {
                 throw e;
             }
         }
         try {
-            if(!Visibility.isVisible(tm, t, entry)) {
+            if (!Visibility.isVisible(tm, t, entry)) {
                 return false;
             }
             Lock l = null;
             try {
                 l = lt.add(xid, uid);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 t.err = Error.ConcurrentUpdateException;
                 internAbort(xid, true);
                 t.autoAborted = true;
                 throw t.err;
             }
-            if(l != null) {
+            if (l != null) {
                 l.lock();
                 l.unlock();
             }
 
-            if(entry.getXmax() == xid) {
+            if (entry.getXmax() == xid) {
                 return false;
             }
 
-            if(Visibility.isVersionSkip(tm, t, entry)) {
+            if (Visibility.isVersionSkip(tm, t, entry)) {
                 t.err = Error.ConcurrentUpdateException;
                 internAbort(xid, true);
                 t.autoAborted = true;
@@ -151,10 +151,10 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
         lock.unlock();
 
         try {
-            if(t.err != null) {
+            if (t.err != null) {
                 throw t.err;
             }
-        } catch(NullPointerException n) {
+        } catch (NullPointerException n) {
             System.out.println(xid);
             System.out.println(activeTransaction.keySet());
             Panic.panic(n);
@@ -176,12 +176,12 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
     private void internAbort(long xid, boolean autoAborted) {
         lock.lock();
         Transaction t = activeTransaction.get(xid);
-        if(!autoAborted) {
+        if (!autoAborted) {
             activeTransaction.remove(xid);
         }
         lock.unlock();
 
-        if(t.autoAborted) return;
+        if (t.autoAborted) return;
         lt.remove(xid);
         tm.abort(xid);
     }
@@ -193,7 +193,7 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
     @Override
     protected Entry getForCache(long uid) throws Exception {
         Entry entry = Entry.loadEntry(this, uid);
-        if(entry == null) {
+        if (entry == null) {
             throw Error.NullEntryException;
         }
         return entry;
@@ -203,5 +203,5 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
     protected void releaseForCache(Entry entry) {
         entry.remove();
     }
-    
+
 }

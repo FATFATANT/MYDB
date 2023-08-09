@@ -13,7 +13,6 @@ import org.junit.Test;
 public class TransactionManagerTest {
 
     static Random random = new SecureRandom();
-
     private int transCnt = 0;
     private int noWorkers = 50;
     private int noWorks = 3000;
@@ -27,7 +26,7 @@ public class TransactionManagerTest {
         tmger = TransactionManager.create("/tmp/tranmger_test");
         transMap = new ConcurrentHashMap<>();
         cdl = new CountDownLatch(noWorkers);
-        for(int i = 0; i < noWorkers; i ++) {
+        for (int i = 0; i < noWorkers; i++) {
             Runnable r = () -> worker();
             new Thread(r).run();
         }
@@ -42,19 +41,19 @@ public class TransactionManagerTest {
     private void worker() {
         boolean inTrans = false;
         long transXID = 0;
-        for(int i = 0; i < noWorks; i ++) {
+        for (int i = 0; i < noWorks; i++) {
             int op = Math.abs(random.nextInt(6));
-            if(op == 0) {
+            if (op == 0) {
                 lock.lock();
-                if(inTrans == false) {
+                if (inTrans == false) {
                     long xid = tmger.begin();
-                    transMap.put(xid, (byte)0);
-                    transCnt ++;
+                    transMap.put(xid, (byte) 0);
+                    transCnt++;
                     transXID = xid;
                     inTrans = true;
                 } else {
                     int status = (random.nextInt(Integer.MAX_VALUE) % 2) + 1;
-                    switch(status) {
+                    switch (status) {
                         case 1:
                             tmger.commit(transXID);
                             break;
@@ -62,14 +61,14 @@ public class TransactionManagerTest {
                             tmger.abort(transXID);
                             break;
                     }
-                    transMap.put(transXID, (byte)status);
+                    transMap.put(transXID, (byte) status);
                     inTrans = false;
                 }
                 lock.unlock();
             } else {
                 lock.lock();
-                if(transCnt > 0) {
-                    long xid = (long)((random.nextInt(Integer.MAX_VALUE) % transCnt) + 1);
+                if (transCnt > 0) {
+                    long xid = (long) ((random.nextInt(Integer.MAX_VALUE) % transCnt) + 1);
                     byte status = transMap.get(xid);
                     boolean ok = false;
                     switch (status) {

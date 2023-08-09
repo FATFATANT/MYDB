@@ -34,17 +34,18 @@ public class Server {
         System.out.println("Server listen to port: " + port);
         ThreadPoolExecutor tpe = new ThreadPoolExecutor(10, 20, 1L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(100), new ThreadPoolExecutor.CallerRunsPolicy());
         try {
-            while(true) {
+            while (true) {
                 Socket socket = ss.accept();
                 Runnable worker = new HandleSocket(socket, tbm);
                 tpe.execute(worker);
             }
-        } catch(IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         } finally {
             try {
                 ss.close();
-            } catch (IOException ignored) {}
+            } catch (IOException ignored) {
+            }
         }
     }
 }
@@ -60,14 +61,14 @@ class HandleSocket implements Runnable {
 
     @Override
     public void run() {
-        InetSocketAddress address = (InetSocketAddress)socket.getRemoteSocketAddress();
-        System.out.println("Establish connection: " + address.getAddress().getHostAddress()+":"+address.getPort());
+        InetSocketAddress address = (InetSocketAddress) socket.getRemoteSocketAddress();
+        System.out.println("Establish connection: " + address.getAddress().getHostAddress() + ":" + address.getPort());
         Packager packager = null;
         try {
             Transporter t = new Transporter(socket);
             Encoder e = new Encoder();
             packager = new Packager(t, e);
-        } catch(IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             try {
                 socket.close();
@@ -77,11 +78,11 @@ class HandleSocket implements Runnable {
             return;
         }
         Executor exe = new Executor(tbm);
-        while(true) {
+        while (true) {
             Package pkg = null;
             try {
                 pkg = packager.receive();
-            } catch(Exception e) {
+            } catch (Exception e) {
                 break;
             }
             byte[] sql = pkg.getData();
@@ -108,5 +109,5 @@ class HandleSocket implements Runnable {
             e.printStackTrace();
         }
     }
-    
+
 }

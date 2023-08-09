@@ -8,10 +8,12 @@ public class MockTransactionManager implements TransactionManager {
     }
 
     @Override
-    public void commit(long xid) {}
+    public void commit(long xid) {
+    }
 
     @Override
-    public void abort(long xid) {}
+    public void abort(long xid) {
+    }
 
     @Override
     public boolean isActive(long xid) {
@@ -29,6 +31,7 @@ public class MockTransactionManager implements TransactionManager {
     }
 
     @Override
-    public void close() {}
-    
+    public void close() {
+    }
+
 }

@@ -4,8 +4,8 @@ public class Packager {
     private Transporter transpoter;
     private Encoder encoder;
 
-    public Packager(Transporter transpoter, Encoder encoder) {
-        this.transpoter = transpoter;
+    public Packager(Transporter transporter, Encoder encoder) {
+        this.transpoter = transporter;
         this.encoder = encoder;
     }
 
