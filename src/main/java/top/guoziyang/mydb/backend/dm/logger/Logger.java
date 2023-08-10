@@ -22,8 +22,8 @@ public interface Logger {
 
     void close();
 
-    public static Logger create(String path) {
-        File f = new File(path + LoggerImpl.LOG_SUFFIX);
+    static Logger create(String path) {
+        File f = new File(path + LoggerImpl.LOG_SUFFIX);  // 对于mysql而言日志是非常重要的，所以这个日志可能不是仅仅打印看看的
         try {
             if (!f.createNewFile()) {
                 Panic.panic(Error.FileExistsException);
@@ -48,7 +48,7 @@ public interface Logger {
         try {
             fc.position(0);
             fc.write(buf);
-            fc.force(false);
+            fc.force(false);  // 将内存中数据落盘
         } catch (IOException e) {
             Panic.panic(e);
         }

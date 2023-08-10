@@ -35,7 +35,7 @@ public class TransactionManagerImpl implements TransactionManager {
         this.file = raf;
         this.fc = fc;
         counterLock = new ReentrantLock();
-        checkXIDCounter();
+        checkXIDCounter();  // 为啥要传入一个空的文件
     }
 
     /**
@@ -47,36 +47,52 @@ public class TransactionManagerImpl implements TransactionManager {
         try {
             fileLen = file.length();
         } catch (IOException e1) {
-            Panic.panic(Error.BadXIDFileException);
+            Panic.panic(Error.BadXIDFileException);  // 看个文件长度也会爆出异常？
         }
         if (fileLen < LEN_XID_HEADER_LENGTH) {
             Panic.panic(Error.BadXIDFileException);
         }
-
+        /*
+            下面几句大概意思就是说将xid文件的前8个字节读入内存
+            这8个字节表示db中的事务数，因此可以parseLong把它读出来
+         */
         ByteBuffer buf = ByteBuffer.allocate(LEN_XID_HEADER_LENGTH);
         try {
             fc.position(0);
-            fc.read(buf);
+            fc.read(buf);  // 注意是从channel读到buffer
         } catch (IOException e) {
             Panic.panic(e);
         }
+        // 每次进入这个方法相当于读出来当前的事务数，后续开启新的事务就在这个事务编号的基础上+1
         this.xidCounter = Parser.parseLong(buf.array());
+        // 最后一个事务所在字节下标，应与文件大小一致
         long end = getXidPosition(this.xidCounter + 1);
         if (end != fileLen) {
             Panic.panic(Error.BadXIDFileException);
         }
     }
 
-    // 根据事务xid取得其在xid文件中对应的位置
+    /*
+        根据事务xid取得其在xid文件中对应的位置
+        正如文档所写，前8个字节记录了这个 XID 文件管理的事务的个数
+        后面的每个字节表示每个事务的状态（每个事务的状态用一个字节就能表示）
+        又由于事务0是保留事务，这里就需要-1
+     */
     private long getXidPosition(long xid) {
+        // 每个事务的事务id占一个字节
         return LEN_XID_HEADER_LENGTH + (xid - 1) * XID_FIELD_SIZE;
     }
 
-    // 更新xid事务的状态为status
+    /*
+        更新xid事务的状态为status
+        可以发现它这里的事务无论是启动提交还是关闭都是调用这个update
+     */
     private void updateXID(long xid, byte status) {
         long offset = getXidPosition(xid);
         byte[] tmp = new byte[XID_FIELD_SIZE];
+        // 由于就是一个字节来表示事务状态，而事务的大小也是一个字节，这里就刚好而且写死了
         tmp[0] = status;
+        // 将这个事务状态对应的字节数组包进Buffer然后写入xid这个文件的fileChannel，然后通过force落盘
         ByteBuffer buf = ByteBuffer.wrap(tmp);
         try {
             fc.position(offset);
@@ -85,7 +101,7 @@ public class TransactionManagerImpl implements TransactionManager {
             Panic.panic(e);
         }
         try {
-            fc.force(false);
+            fc.force(false);  // metaData表示是否同步文件的元数据（例如最后修改时间等）
         } catch (IOException e) {
             Panic.panic(e);
         }
@@ -96,7 +112,7 @@ public class TransactionManagerImpl implements TransactionManager {
         xidCounter++;
         ByteBuffer buf = ByteBuffer.wrap(Parser.long2Byte(xidCounter));
         try {
-            fc.position(0);
+            fc.position(0);  // 更新事务数量就是直接替换原来的8个字节
             fc.write(buf);
         } catch (IOException e) {
             Panic.panic(e);
@@ -133,6 +149,7 @@ public class TransactionManagerImpl implements TransactionManager {
 
     // 检测XID事务是否处于status状态
     private boolean checkXID(long xid, byte status) {
+        // 查找事务id在xid文件对应转换成的字节数组的索引，然后取出该索引上的字节，就获得了该事务的状态
         long offset = getXidPosition(xid);
         ByteBuffer buf = ByteBuffer.wrap(new byte[XID_FIELD_SIZE]);
         try {
@@ -141,20 +158,24 @@ public class TransactionManagerImpl implements TransactionManager {
         } catch (IOException e) {
             Panic.panic(e);
         }
+        // 检查事务在磁盘中存储的状态和传入的状态是否相等
         return buf.array()[0] == status;
     }
 
     public boolean isActive(long xid) {
+        // 无事务就是永远活跃
         if (xid == SUPER_XID) return false;
         return checkXID(xid, FIELD_TRAN_ACTIVE);
     }
 
     public boolean isCommitted(long xid) {
+        // 无事务也是永远已提交
         if (xid == SUPER_XID) return true;
         return checkXID(xid, FIELD_TRAN_COMMITTED);
     }
 
     public boolean isAborted(long xid) {
+        // 无事务不会已撤销
         if (xid == SUPER_XID) return false;
         return checkXID(xid, FIELD_TRAN_ABORTED);
     }

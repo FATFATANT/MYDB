@@ -19,6 +19,7 @@ public class PageX {
 
     public static byte[] initRaw() {
         byte[] raw = new byte[PageCache.PAGE_SIZE];
+        // Free Space Offset，空闲位置偏移
         setFSO(raw, OF_DATA);
         return raw;
     }
@@ -33,6 +34,8 @@ public class PageX {
     }
 
     private static short getFSO(byte[] raw) {
+        // 读取位于前两个字节的空闲位置偏移，其实就是前多少页已经写过数据了，后面要从哪里开始
+        // 至于为什么是两个字节，我认为首先一个是一个页是8MB，这个不能用一个字节表示，需要13个bit，但是为了方便直接用两个字节表示
         return Parser.parseShort(Arrays.copyOfRange(raw, 0, 2));
     }
 

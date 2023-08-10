@@ -11,7 +11,7 @@ import top.guoziyang.mydb.common.Error;
 
 public interface PageCache {
 
-    public static final int PAGE_SIZE = 1 << 13;
+    int PAGE_SIZE = 1 << 13;  // 8KB
 
     int newPage(byte[] initData);
 
@@ -21,13 +21,13 @@ public interface PageCache {
 
     void release(Page page);
 
-    void truncateByBgno(int maxPgno);
+    void truncateByPageNo(int maxPgno);
 
     int getPageNumber();
 
     void flushPage(Page pg);
 
-    public static PageCacheImpl create(String path, long memory) {
+    static PageCacheImpl create(String path, long memory) {
         File f = new File(path + PageCacheImpl.DB_SUFFIX);
         try {
             if (!f.createNewFile()) {
@@ -48,10 +48,10 @@ public interface PageCache {
         } catch (FileNotFoundException e) {
             Panic.panic(e);
         }
-        return new PageCacheImpl(raf, fc, (int) memory / PAGE_SIZE);
+        return new PageCacheImpl(raf, fc, (int) memory / PAGE_SIZE);  // 因为在mysql中，页放在区中，这个就是的memory类似于区的大小，这里一除就相当于一个区可以放几个页
     }
 
-    public static PageCacheImpl open(String path, long memory) {
+    static PageCacheImpl open(String path, long memory) {
         File f = new File(path + PageCacheImpl.DB_SUFFIX);
         if (!f.exists()) {
             Panic.panic(Error.FileNotExistsException);

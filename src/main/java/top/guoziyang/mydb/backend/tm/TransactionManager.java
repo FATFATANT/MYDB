@@ -24,8 +24,8 @@ public interface TransactionManager {
     boolean isAborted(long xid);
 
     void close();
-
-    public static TransactionManagerImpl create(String path) {
+    // 注意这个是静态方法不是默认方法
+    static TransactionManagerImpl create(String path) {
         File f = new File(path + TransactionManagerImpl.XID_SUFFIX);
         try {
             if (!f.createNewFile()) {
@@ -47,19 +47,19 @@ public interface TransactionManager {
             Panic.panic(e);
         }
 
-        // 写空XID文件头
-        ByteBuffer buf = ByteBuffer.wrap(new byte[TransactionManagerImpl.LEN_XID_HEADER_LENGTH]);
+        // 写空XID文件头，向通道写入一个空的长度为8的字节数组
+        ByteBuffer buf = ByteBuffer.wrap(new byte[TransactionManagerImpl.LEN_XID_HEADER_LENGTH]);  // wrap方法真的么看来就像是说明了buffer的本质，封装起来的字节数组
         try {
             fc.position(0);
             fc.write(buf);
         } catch (IOException e) {
             Panic.panic(e);
         }
-
+        // 接口中的静态方法返回实现类的实例
         return new TransactionManagerImpl(raf, fc);
     }
 
-    public static TransactionManagerImpl open(String path) {
+    static TransactionManagerImpl open(String path) {
         File f = new File(path + TransactionManagerImpl.XID_SUFFIX);
         if (!f.exists()) {
             Panic.panic(Error.FileNotExistsException);

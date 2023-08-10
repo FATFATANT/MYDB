@@ -79,7 +79,7 @@ public class Booter {
             out.flush();
         } catch (IOException e) {
             Panic.panic(e);
-        }
+        }  // 新建一个临时文件用来更新，更新完后替换原数据
         try {
             Files.move(tmp.toPath(), new File(path + BOOTER_SUFFIX).toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {

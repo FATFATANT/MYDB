@@ -64,7 +64,7 @@ public class Recover {
         if (maxPgno == 0) {
             maxPgno = 1;
         }
-        pc.truncateByBgno(maxPgno);
+        pc.truncateByPageNo(maxPgno);
         System.out.println("Truncate to " + maxPgno + " pages.");
 
         redoTranscations(tm, lg, pc);

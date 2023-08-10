@@ -6,11 +6,12 @@ import java.util.concurrent.locks.ReentrantLock;
 import top.guoziyang.mydb.backend.dm.pageCache.PageCache;
 
 public class PageImpl implements Page {
-    private int pageNumber;
-    private byte[] data;
+    // 页号从1开始
+    private final int pageNumber;
+    private final byte[] data;
     private boolean dirty;
-    private Lock lock;
-    private PageCache pc;
+    private final Lock lock;
+    private final PageCache pc;
 
     public PageImpl(int pageNumber, byte[] data, PageCache pc) {
         this.pageNumber = pageNumber;

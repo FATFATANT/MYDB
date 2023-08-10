@@ -31,6 +31,7 @@ public class Parser {
     }
 
     public static byte[] long2Byte(long value) {
+        // 8个字节刚好是long值的存储容量，此处将事务编号放进去然后将这个字节数组返回
         return ByteBuffer.allocate(Long.SIZE / Byte.SIZE).putLong(value).array();
     }
 

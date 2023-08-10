@@ -37,8 +37,8 @@ public class Launcher {
             return;
         }
         if (cmd.hasOption("create")) {
-            // 代码中写的内容是直接把传入的路径的最后一项作为名字，我感觉这样不妥，我再加个名字
-            createDB(cmd.getOptionValue("create") + "db");
+            // 代码中写的内容是直接把传入的路径的最后一项作为名字，和预期不符，此处再追加个名字
+            createDB(cmd.getOptionValue("create") + "/db");
             return;
         }
         System.out.println("Usage: launcher (open|create) DBPath");
