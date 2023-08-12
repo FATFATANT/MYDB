@@ -32,6 +32,9 @@ public class PageOne {
         System.arraycopy(RandomUtil.randomBytes(LEN_VC), 0, raw, OF_VC, LEN_VC);  // 给传入的raw字节数组的第100位到第108位赋值随机数
     }
 
+    /*
+        设置第一页的校验值
+     */
     public static void setVcClose(Page pg) {
         pg.setDirty(true);
         setVcClose(pg.getData());

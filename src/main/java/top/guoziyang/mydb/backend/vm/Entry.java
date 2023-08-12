@@ -14,9 +14,11 @@ import top.guoziyang.mydb.backend.utils.Parser;
  * [XMIN] [XMAX] [data]
  */
 public class Entry {
-
+    // XMIN 是创建该条记录（版本）的事务编号
     private static final int OF_XMIN = 0;
+    // XMAX 则是删除该条记录（版本）的事务编号
     private static final int OF_XMAX = OF_XMIN + 8;
+    // DATA 就是这条记录持有的数据
     private static final int OF_DATA = OF_XMAX + 8;
     private long uid;
     private DataItem dataItem;
@@ -49,7 +51,7 @@ public class Entry {
         dataItem.release();
     }
 
-    // 以拷贝的形式返回内容
+    // 以拷贝的形式返回内容，这个也算多版本并发的核心之一了
     public byte[] data() {
         dataItem.rLock();
         try {
@@ -86,6 +88,7 @@ public class Entry {
         dataItem.before();
         try {
             SubArray sa = dataItem.data();
+            // 更新xid
             System.arraycopy(Parser.long2Byte(xid), 0, sa.raw, sa.start + OF_XMAX, 8);
         } finally {
             dataItem.after(xid);

@@ -44,7 +44,7 @@ public class Node {
     }
 
     static int getRawNoKeys(SubArray raw) {
-        return (int) Parser.parseShort(Arrays.copyOfRange(raw.raw, raw.start + NO_KEYS_OFFSET, raw.start + NO_KEYS_OFFSET + 2));
+        return Parser.parseShort(Arrays.copyOfRange(raw.raw, raw.start + NO_KEYS_OFFSET, raw.start + NO_KEYS_OFFSET + 2));
     }
 
     static void setRawSibling(SubArray raw, long sibling) {
@@ -90,7 +90,7 @@ public class Node {
 
     static byte[] newRootRaw(long left, long right, long key) {
         SubArray raw = new SubArray(new byte[NODE_SIZE], 0, NODE_SIZE);
-
+        // 通过给这个字节数组的不同索引位置赋值，填充Node的各项信息
         setRawIsLeaf(raw, false);
         setRawNoKeys(raw, 2);
         setRawSibling(raw, 0);
@@ -102,9 +102,12 @@ public class Node {
         return raw.raw;
     }
 
+    /*
+        这个方法返回一个空的根结点
+     */
     static byte[] newNilRootRaw() {
         SubArray raw = new SubArray(new byte[NODE_SIZE], 0, NODE_SIZE);
-
+        // 初始根结点应该也算叶子结点
         setRawIsLeaf(raw, true);
         setRawNoKeys(raw, 0);
         setRawSibling(raw, 0);
@@ -136,7 +139,7 @@ public class Node {
         }
     }
 
-    class SearchNextRes {
+    static class SearchNextRes {
         long uid;
         long siblingUid;
     }
@@ -163,7 +166,7 @@ public class Node {
         }
     }
 
-    class LeafSearchRangeRes {
+    static class LeafSearchRangeRes {
         List<Long> uids;
         long siblingUid;
     }
@@ -203,7 +206,7 @@ public class Node {
         }
     }
 
-    class InsertAndSplitRes {
+    static class InsertAndSplitRes {
         long siblingUid, newSon, newKey;
     }
 
@@ -274,7 +277,7 @@ public class Node {
         return BALANCE_NUMBER * 2 == getRawNoKeys(raw);
     }
 
-    class SplitRes {
+    static class SplitRes {
         long newSon, newKey;
     }
 

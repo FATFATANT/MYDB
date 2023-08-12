@@ -15,7 +15,7 @@ public interface PageCache {
 
     int newPage(byte[] initData);
 
-    Page getPage(int pgno) throws Exception;
+    Page getPage(int pageNo) throws Exception;
 
     void close();
 

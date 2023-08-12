@@ -17,6 +17,7 @@ public class Transaction {
         Transaction t = new Transaction();
         t.xid = xid;
         t.level = level;
+        // 当前所有的活跃事务
         if (level != 0) {
             t.snapshot = new HashMap<>();
             for (Long x : active.keySet()) {

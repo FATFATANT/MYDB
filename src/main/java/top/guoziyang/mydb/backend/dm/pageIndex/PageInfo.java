@@ -1,11 +1,11 @@
 package top.guoziyang.mydb.backend.dm.pageIndex;
 
 public class PageInfo {
-    public int pgno;
+    public int pageNo;
     public int freeSpace;
 
-    public PageInfo(int pgno, int freeSpace) {
-        this.pgno = pgno;
+    public PageInfo(int pageNo, int freeSpace) {
+        this.pageNo = pageNo;
         this.freeSpace = freeSpace;
     }
 }

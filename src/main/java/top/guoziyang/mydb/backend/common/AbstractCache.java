@@ -90,7 +90,7 @@ public abstract class AbstractCache<T> {
     protected void release(long key) {
         lock.lock();
         try {
-            // 释放一个缓存并不是直接将这个元素删除，是先降低引用计数
+            // 释放一个缓存并不是直接将这个元素从缓存中删除，是先降低引用计数
             // 当引用计数为0时才真正将这个元素删除
             int ref = references.get(key) - 1;
             if (ref == 0) {

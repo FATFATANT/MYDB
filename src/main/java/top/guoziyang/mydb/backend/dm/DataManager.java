@@ -26,6 +26,7 @@ public interface DataManager {
         PageCache pc = PageCache.open(path, mem);
         Logger lg = Logger.open(path);
         DataManagerImpl dm = new DataManagerImpl(pc, lg, tm);
+        // 校验和不对就得根据日志来恢复数据了
         if (!dm.loadCheckPageOne()) {
             Recover.recover(tm, lg, pc);
         }

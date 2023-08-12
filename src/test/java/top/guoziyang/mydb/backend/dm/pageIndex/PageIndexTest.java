@@ -19,7 +19,7 @@ public class PageIndexTest {
             for (int i = 0; i < 19; i++) {
                 PageInfo pi = pIndex.select(i * threshold);
                 assert pi != null;
-                assert pi.pgno == i + 1;
+                assert pi.pageNo == i + 1;
             }
         }
     }

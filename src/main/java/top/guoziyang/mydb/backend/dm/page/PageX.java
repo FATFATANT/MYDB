@@ -56,9 +56,11 @@ public class PageX {
     // 将raw插入pg中的offset位置，并将pg的offset设置为较大的offset
     public static void recoverInsert(Page pg, byte[] raw, short offset) {
         pg.setDirty(true);
+        // 给pg的data追加raw字节数组
         System.arraycopy(raw, 0, pg.getData(), offset, raw.length);
-
+        // 重新获取偏移量
         short rawFSO = getFSO(pg.getData());
+        // 重新设置偏移量，也就是重新设置大小
         if (rawFSO < offset + raw.length) {
             setFSO(pg.getData(), (short) (offset + raw.length));
         }
@@ -67,6 +69,7 @@ public class PageX {
     // 将raw插入pg中的offset位置，不更新update
     public static void recoverUpdate(Page pg, byte[] raw, short offset) {
         pg.setDirty(true);
+        // 这个没更新偏移量
         System.arraycopy(raw, 0, pg.getData(), offset, raw.length);
     }
 }

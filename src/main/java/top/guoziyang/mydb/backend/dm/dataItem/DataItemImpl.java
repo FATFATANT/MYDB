@@ -19,14 +19,13 @@ public class DataItemImpl implements DataItem {
     static final int OF_VALID = 0;
     static final int OF_SIZE = 1;
     static final int OF_DATA = 3;
-
-    private SubArray raw;
-    private byte[] oldRaw;
-    private Lock rLock;
-    private Lock wLock;
-    private DataManagerImpl dm;
-    private long uid;
-    private Page pg;
+    private final SubArray raw;
+    private final byte[] oldRaw;
+    private final Lock rLock;
+    private final Lock wLock;
+    private final DataManagerImpl dm;
+    private final long uid;
+    private final Page pg;
 
     public DataItemImpl(SubArray raw, byte[] oldRaw, Page pg, long uid, DataManagerImpl dm) {
         this.raw = raw;
@@ -50,6 +49,7 @@ public class DataItemImpl implements DataItem {
 
     @Override
     public void before() {
+        // 这个方法看起来是将数据raw备份一份到oldRaw
         wLock.lock();
         pg.setDirty(true);
         System.arraycopy(raw.raw, raw.start, oldRaw, 0, oldRaw.length);
@@ -57,6 +57,7 @@ public class DataItemImpl implements DataItem {
 
     @Override
     public void unBefore() {
+        // 这个则是将存在oldRaw的值再还给raw
         System.arraycopy(oldRaw, 0, raw.raw, raw.start, oldRaw.length);
         wLock.unlock();
     }

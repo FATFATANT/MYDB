@@ -85,7 +85,7 @@ public class PageCacheImpl extends AbstractCache<Page> implements PageCache {
     }
 
     public void release(Page page) {
-        release((long) page.getPageNumber());
+        release(page.getPageNumber());
     }
 
     public void flushPage(Page pg) {

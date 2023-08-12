@@ -54,8 +54,8 @@ public class DataManagerImpl extends AbstractCache<DataItem> implements DataMana
             if (pi != null) {
                 break;
             } else {
-                int newPgno = pc.newPage(PageX.initRaw());
-                pIndex.add(newPgno, PageX.MAX_FREE_SPACE);
+                int newPageNo = pc.newPage(PageX.initRaw());
+                pIndex.add(newPageNo, PageX.MAX_FREE_SPACE);
             }
         }
         if (pi == null) {
@@ -65,21 +65,21 @@ public class DataManagerImpl extends AbstractCache<DataItem> implements DataMana
         Page pg = null;
         int freeSpace = 0;
         try {
-            pg = pc.getPage(pi.pgno);
+            pg = pc.getPage(pi.pageNo);
             byte[] log = Recover.insertLog(xid, pg, raw);
             logger.log(log);
 
             short offset = PageX.insert(pg, raw);
 
             pg.release();
-            return Types.addressToUid(pi.pgno, offset);
+            return Types.addressToUid(pi.pageNo, offset);
 
         } finally {
             // 将取出的pg重新插入pIndex
             if (pg != null) {
-                pIndex.add(pi.pgno, PageX.getFreeSpace(pg));
+                pIndex.add(pi.pageNo, PageX.getFreeSpace(pg));
             } else {
-                pIndex.add(pi.pgno, freeSpace);
+                pIndex.add(pi.pageNo, freeSpace);
             }
         }
     }
@@ -106,10 +106,15 @@ public class DataManagerImpl extends AbstractCache<DataItem> implements DataMana
 
     @Override
     protected DataItem getForCache(long uid) throws Exception {
+        /*
+            uid是long类型，占8个字节
+            uid的低位，截取前两个字节，作为offset
+            uid的高位，截取后四个字节，作为pageNo
+         */
         short offset = (short) (uid & ((1L << 16) - 1));
         uid >>>= 32;
-        int pgno = (int) (uid & ((1L << 32) - 1));
-        Page pg = pc.getPage(pgno);
+        int pageNo = (int) (uid & ((1L << 32) - 1));
+        Page pg = pc.getPage(pageNo);
         return DataItem.parseDataItem(pg, offset, this);
     }
 
@@ -150,6 +155,7 @@ public class DataManagerImpl extends AbstractCache<DataItem> implements DataMana
             } catch (Exception e) {
                 Panic.panic(e);
             }
+            assert pg != null;
             pIndex.add(pg.getPageNumber(), PageX.getFreeSpace(pg));
             pg.release();
         }

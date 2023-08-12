@@ -28,18 +28,14 @@ import top.guoziyang.mydb.common.Error;
  */
 public class LoggerImpl implements Logger {
 
-    private static final int SEED = 13331;
-
+    private static final int SEED = 13331;  // 计算日志校验和的种子
     private static final int OF_SIZE = 0;
     private static final int OF_CHECKSUM = OF_SIZE + 4;
     private static final int OF_DATA = OF_CHECKSUM + 4;
-
     public static final String LOG_SUFFIX = ".log";
-
-    private RandomAccessFile file;
-    private FileChannel fc;
-    private Lock lock;
-
+    private final RandomAccessFile file;
+    private final FileChannel fc;
+    private final Lock lock;
     private long position;  // 当前日志指针的位置
     private long fileSize;  // 初始化时记录，log操作不更新
     private int xChecksum;
@@ -85,17 +81,18 @@ public class LoggerImpl implements Logger {
     // 检查并移除bad tail
     private void checkAndRemoveTail() {
         rewind();
-
         int xCheck = 0;
+        // 注意，首条日志的xCheck是从0开始，后面的都是在此基础上的迭代，因此每一条日志都受到前面所有的日志的影响
         while (true) {
             byte[] log = internNext();
             if (log == null) break;
             xCheck = calChecksum(xCheck, log);
         }
+        // 校验和不对的话是日志文件本身就有问题了，就报错
         if (xCheck != xChecksum) {
             Panic.panic(Error.BadLogFileException);
         }
-
+        // 截断后面的残缺页
         try {
             truncate(position);
         } catch (Exception e) {
@@ -110,6 +107,7 @@ public class LoggerImpl implements Logger {
     }
 
     private int calChecksum(int xCheck, byte[] log) {
+        // 取出单条日志的数据字段所有字节加上xCheck乘上种子，反复叠加
         for (byte b : log) {
             xCheck = xCheck * SEED + b;
         }
@@ -118,6 +116,7 @@ public class LoggerImpl implements Logger {
 
     @Override
     public void log(byte[] data) {
+        // 将数据计算出校验和，在其前后拼接上数据长度和数据，写入fileChannel
         byte[] log = wrapLog(data);
         ByteBuffer buf = ByteBuffer.wrap(log);
         lock.lock();
@@ -132,9 +131,13 @@ public class LoggerImpl implements Logger {
         updateXChecksum(log);
     }
 
+    /*
+        更新校验和xCheck就不是从0开始了，而是根据上一条日志记录的校验和开始
+     */
     private void updateXChecksum(byte[] log) {
         this.xChecksum = calChecksum(this.xChecksum, log);
         try {
+            // 日志文件的头部是校验和
             fc.position(0);
             fc.write(ByteBuffer.wrap(Parser.int2Byte(xChecksum)));
             fc.force(false);
@@ -144,6 +147,7 @@ public class LoggerImpl implements Logger {
     }
 
     private byte[] wrapLog(byte[] data) {
+        // 每一条日志的校验和都是传入值为0的xCheck进行计算
         byte[] checksum = Parser.int2Byte(calChecksum(0, data));
         byte[] size = Parser.int2Byte(data.length);
         return Bytes.concat(size, checksum, data);
@@ -163,6 +167,11 @@ public class LoggerImpl implements Logger {
         if (position + OF_DATA >= fileSize) {
             return null;
         }
+        /*
+           单条日志的结构为
+           [Size][Checksum][Data]
+           其中Size为四个字节，这里读取这四个字节
+         */
         ByteBuffer tmp = ByteBuffer.allocate(4);
         try {
             fc.position(position);
@@ -171,10 +180,11 @@ public class LoggerImpl implements Logger {
             Panic.panic(e);
         }
         int size = Parser.parseInt(tmp.array());
+        // 此处是起始偏移位置+Size+Checksum+Data的长度和文件的大小进行比较
         if (position + size + OF_DATA > fileSize) {
             return null;
         }
-
+        // 单条日志的总长度
         ByteBuffer buf = ByteBuffer.allocate(OF_DATA + size);
         try {
             fc.position(position);
@@ -184,11 +194,15 @@ public class LoggerImpl implements Logger {
         }
 
         byte[] log = buf.array();
+        // 截取字节数组的日志部分计算校验和
         int checkSum1 = calChecksum(0, Arrays.copyOfRange(log, OF_DATA, log.length));
+        // 取出保存的校验和
         int checkSum2 = Parser.parseInt(Arrays.copyOfRange(log, OF_CHECKSUM, OF_DATA));
+        // 校验和不匹配就是该页有问题，返回null
         if (checkSum1 != checkSum2) {
             return null;
         }
+        // 将偏移量起始位置往后移到下一页
         position += log.length;
         return log;
     }
@@ -199,12 +213,14 @@ public class LoggerImpl implements Logger {
         try {
             byte[] log = internNext();
             if (log == null) return null;
+            // 仅返回字节数组到数据部分
             return Arrays.copyOfRange(log, OF_DATA, log.length);
         } finally {
             lock.unlock();
         }
     }
 
+    // 回滚指针到校验和之后，值为4是因为校验和为4个字节
     @Override
     public void rewind() {
         position = 4;
@@ -212,6 +228,9 @@ public class LoggerImpl implements Logger {
 
     @Override
     public void close() {
+        /*
+            关闭文件
+         */
         try {
             fc.close();
             file.close();

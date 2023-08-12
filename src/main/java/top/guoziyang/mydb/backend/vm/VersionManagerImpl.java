@@ -40,7 +40,7 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
             throw t.err;
         }
 
-        Entry entry = null;
+        Entry entry;
         try {
             entry = super.get(uid);
         } catch (Exception e) {
@@ -84,7 +84,7 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
         if (t.err != null) {
             throw t.err;
         }
-        Entry entry = null;
+        Entry entry;
         try {
             entry = super.get(uid);
         } catch (Exception e) {
@@ -98,7 +98,7 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
             if (!Visibility.isVisible(tm, t, entry)) {
                 return false;
             }
-            Lock l = null;
+            Lock l;
             try {
                 l = lt.add(xid, uid);
             } catch (Exception e) {
@@ -108,6 +108,7 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
                 throw t.err;
             }
             if (l != null) {
+                // 就是通过对已经上锁的锁加锁，实现阻塞
                 l.lock();
                 l.unlock();
             }
@@ -192,11 +193,7 @@ public class VersionManagerImpl extends AbstractCache<Entry> implements VersionM
 
     @Override
     protected Entry getForCache(long uid) throws Exception {
-        Entry entry = Entry.loadEntry(this, uid);
-        if (entry == null) {
-            throw Error.NullEntryException;
-        }
-        return entry;
+        return Entry.loadEntry(this, uid);
     }
 
     @Override

@@ -37,22 +37,26 @@ public interface DataItem {
 
     SubArray getRaw();
 
-    public static byte[] wrapDataItemRaw(byte[] raw) {
+    static byte[] wrapDataItemRaw(byte[] raw) {
+        // 拼接DataItem数据项
         byte[] valid = new byte[1];
         byte[] size = Parser.short2Byte((short) raw.length);
         return Bytes.concat(valid, size, raw);
     }
 
-    // 从页面的offset处解析处dataitem
-    public static DataItem parseDataItem(Page pg, short offset, DataManagerImpl dm) {
+    // 从页面的offset处解析处dataItem
+    static DataItem parseDataItem(Page pg, short offset, DataManagerImpl dm) {
         byte[] raw = pg.getData();
+        // 将刚才截取出来的长度值赋值到raw的对应位置
         short size = Parser.parseShort(Arrays.copyOfRange(raw, offset + DataItemImpl.OF_SIZE, offset + DataItemImpl.OF_DATA));
+        // 长度更新
         short length = (short) (size + DataItemImpl.OF_DATA);
+        // 这个为啥要这么拼一下，既然没变为啥不直接获取
         long uid = Types.addressToUid(pg.getPageNumber(), offset);
         return new DataItemImpl(new SubArray(raw, offset, offset + length), new byte[length], pg, uid, dm);
     }
 
-    public static void setDataItemRawInvalid(byte[] raw) {
+    static void setDataItemRawInvalid(byte[] raw) {
         raw[DataItemImpl.OF_VALID] = (byte) 1;
     }
 }
